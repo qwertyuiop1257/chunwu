@@ -1,0 +1,1952 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#07090f" />
+<title>侍奉部 · 观影院</title>
+<style>
+:root{
+  --bg:#07090f; --panel:#0e1219; --panel2:#141a26; --line:#212a3c;
+  --text:#d5d9e2; --dim:#77809a; --gold:#c9b184;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background: radial-gradient(900px 420px at 50% -12%, #131b2c 0%, transparent 62%), var(--bg);
+  color:var(--text);
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  font-size:14px; line-height:1.78;
+  overflow:hidden; overscroll-behavior:none; -webkit-text-size-adjust:100%;
+}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:#1e2637;border-radius:3px}
+
+.app{display:grid;grid-template-rows:auto auto auto minmax(0,1fr) auto auto;
+     height:100vh;height:100dvh;padding-top:var(--safe-t)}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#0d1119,#0a0e15)}
+.brand{display:flex;align-items:baseline;gap:8px}
+.brand b{font-size:15px;font-weight:600;color:var(--gold);letter-spacing:2px}
+.brand small{color:var(--dim);font-size:10px;letter-spacing:1.5px}
+.iconbtn{background:#161d2b;border:1px solid var(--line);color:var(--text);
+  width:34px;height:34px;border-radius:8px;font-size:15px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+.iconbtn:active{background:#1d2637}
+
+.screen-wrap{padding:12px 12px 0;
+  background:radial-gradient(500px 160px at 50% 0%, rgba(150,146,180,.10), transparent 70%)}
+.screen{position:relative;border-radius:10px;
+  background:linear-gradient(180deg,#161a26,#11141f);
+  border:1px solid #2c3244;
+  box-shadow:0 0 32px rgba(140,140,190,.12), inset 0 0 60px rgba(120,120,180,.06);
+  padding:14px 16px 16px;max-height:34vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.screen::after{content:"";position:absolute;inset:0;border-radius:10px;pointer-events:none;
+  background:repeating-linear-gradient(180deg,transparent 0 3px,rgba(0,0,0,.14) 3px 4px);opacity:.45}
+.screen .meta{font-size:10.5px;letter-spacing:1.6px;color:#7b829c;margin-bottom:8px;padding-right:40px}
+.screen .text{font-size:14px;line-height:1.95;color:#d2d6e4;letter-spacing:.3px;white-space:pre-wrap}
+.screen .text.empty{color:#454b60;font-style:italic}
+.screen .fold{position:absolute;top:10px;right:12px;z-index:2;font-size:10px;color:#6a728e;
+  border:1px solid #2a3044;border-radius:6px;background:#0d111a;padding:1px 7px;line-height:17px;cursor:pointer}
+.screen.folded{max-height:78px;overflow:hidden}
+.screen.folded .text{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+.progress{display:flex;gap:4px;margin:10px 0 0;align-items:center}
+.progress .seg{flex:1;height:3px;border-radius:2px;background:#1a2233;transition:.3s}
+.progress .seg.done{background:#4a6285}
+.progress .seg.now{background:var(--gold);box-shadow:0 0 8px rgba(201,177,132,.5)}
+
+.controls{display:flex;gap:7px;padding:10px 12px;align-items:center;
+  border-bottom:1px solid var(--line);background:#0b0f18}
+.controls button{flex:1}
+button{font-family:inherit;font-size:13px;color:var(--text);background:#161d2b;
+  border:1px solid var(--line);padding:9px 12px;border-radius:8px;cursor:pointer;
+  transition:.13s;min-height:38px}
+button:active{transform:translateY(1px);background:#1d2637}
+button.primary{background:linear-gradient(180deg,#7d6938,#5a4b28);border-color:#a68f4e;color:#fff8e6}
+button:active.primary{background:linear-gradient(180deg,#907a44,#6a592f)}
+button.ghost{background:transparent;border-color:#2a3348;color:#9aa3b6}
+button.on{background:#2b3245;border-color:#454d66;color:#dbe0ee}
+button:disabled{opacity:.35}
+
+.feed{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 20px;min-height:0}
+.feed-title{font-size:10.5px;letter-spacing:3px;color:#4a5067;margin-bottom:12px;
+  display:flex;align-items:center;gap:10px}
+.feed-title::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,#1b2232,transparent)}
+.line{margin-bottom:10px;animation:fade .4s ease both;word-break:break-word}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.line .who{font-size:12px;font-weight:600;margin-right:7px;letter-spacing:.3px}
+.line .body{color:#bcc1d0;font-size:13.5px}
+.line .sight{color:#8d94a8;font-style:italic}
+.line .speak{color:#e6dcc0}
+.line.idle .body{color:#6b7288}
+.line.beatnote{margin:16px 0 11px;padding-left:10px;border-left:2px solid #2a3348;
+  font-size:11px;letter-spacing:.8px;color:#606780}
+.line.beatnote.scene{border-left-color:#4a5170;color:#848db0;margin:0 0 14px;
+  padding:9px 12px;border-radius:0 8px 8px 0;
+  background:linear-gradient(90deg,rgba(74,81,112,.12),transparent);
+  font-size:12.5px;line-height:1.85}
+.line.thinking .body{color:#6d7a92}
+.dots::after{content:"…";animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
+
+.composer{display:flex;gap:8px;padding:9px 12px;border-top:1px solid var(--line);
+  background:#0b0f18;align-items:center}
+.composer input{flex:1;min-width:0;background:#101724;border:1px solid var(--line);
+  color:var(--text);font-family:inherit;font-size:16px;padding:9px 12px;
+  border-radius:8px;outline:none}
+.composer input:focus{border-color:#3a4258;background:#131b29}
+.composer input::placeholder{color:#4a5468;font-size:13px}
+.composer button{flex:none;padding:9px 14px}
+
+.bottombar{display:flex;border-top:1px solid var(--line);background:#0a0e15;padding-bottom:var(--safe-b)}
+.bottombar button{flex:1;border:none;border-radius:0;background:transparent;padding:11px 2px;
+  font-size:11.5px;color:var(--dim);letter-spacing:.5px;display:flex;flex-direction:column;
+  align-items:center;gap:3px;min-height:54px;position:relative}
+.bottombar button:active{background:#131b28}
+.bottombar button .ic{font-size:15px;line-height:1}
+.bottombar button .cnt{position:absolute;top:5px;right:50%;transform:translateX(20px);
+  font-size:9px;background:#2b3245;color:#9fb0d0;border-radius:8px;padding:0 5px;line-height:14px}
+
+.mask{position:fixed;inset:0;background:rgba(4,6,10,.62);z-index:60;opacity:0;
+  pointer-events:none;transition:.2s;backdrop-filter:blur(2px)}
+.mask.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;left:0;right:0;bottom:0;z-index:61;background:var(--panel);
+  border-top:1px solid var(--line);border-radius:16px 16px 0 0;max-height:78vh;
+  display:flex;flex-direction:column;transform:translateY(100%);
+  transition:transform .26s cubic-bezier(.22,.8,.28,1);padding-bottom:var(--safe-b)}
+.drawer.show{transform:translateY(0)}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px 10px;border-bottom:1px solid var(--line);flex:none}
+.drawer-head b{font-size:14px;color:var(--gold);letter-spacing:1px;font-weight:600}
+.drawer-head button{background:transparent;border:1px solid #2a3348;color:var(--dim);
+  font-size:12px;padding:5px 10px;min-height:auto;border-radius:7px}
+.drawer-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px 22px}
+
+.work{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:9px;
+  cursor:pointer;border:1px solid transparent;margin-bottom:5px;background:#10151f}
+.work:active{background:#182133}
+.work.active{background:#182133;border-color:#3a4258}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;box-shadow:0 0 8px currentColor}
+.work .name{flex:1;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.work .badge{font-size:10.5px;color:var(--dim);background:#0a0e15;border:1px solid var(--line);
+  border-radius:10px;padding:0 8px;line-height:18px;flex:none}
+.work.active .badge{color:var(--gold);border-color:#4a3d22;background:#1a150a}
+
+.ep{padding:10px 12px;font-size:13px;color:#a8b0c2;border-left:2px solid #1b2232;
+  cursor:pointer;margin-left:8px;border-radius:0 7px 7px 0;margin-bottom:2px}
+.ep:active{background:#141b28}
+.ep.active{border-left-color:var(--gold);color:var(--gold);background:#171f2e}
+.ep .no{color:#5f6880;font-size:11px;margin-right:7px}
+.ep.active .no{color:#8a7440}
+
+.grp{margin-bottom:14px}
+.grp-head{display:flex;align-items:center;gap:8px;padding:6px 4px 8px}
+.grp-head .gname{flex:1;font-size:11.5px;letter-spacing:1.5px;color:#767e96;
+  display:flex;align-items:center;gap:7px}
+.grp-head .gbtn{font-size:11px;color:#68718a;border:1px solid #232c3f;background:transparent;
+  padding:3px 9px;border-radius:6px;min-height:auto}
+.grp-head .gbtn:active{background:#161d2b}
+
+.pick{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:8px;
+  background:#10151f;margin-bottom:4px;cursor:pointer;transition:.13s}
+.pick:active{background:#182133}
+.pick.on{background:#182133;border:1px solid #3a4258}
+.pick .box{width:17px;height:17px;border-radius:5px;border:1.5px solid #2e3a52;flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:11px;color:#0a0e15;
+  transition:.15s}
+.pick.on .box{background:var(--gold);border-color:var(--gold)}
+.pick .nm{flex:1;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pick .sub{font-size:10.5px;color:#5a6478;flex:none}
+.pick .del{font-size:11px;color:#6b4a4a;border:1px solid #3a2525;background:transparent;
+  border-radius:5px;padding:2px 7px;min-height:auto;flex:none}
+
+.chiprow{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px}
+.tchip{font-size:11.5px;padding:4px 11px;border-radius:12px;background:#131a27;
+  border:1px solid #232c3f;color:#8b94a8;cursor:pointer}
+.tchip.on{background:#2b3245;border-color:#454d66;color:#dbe0ee}
+
+.sec-title{font-size:10.5px;letter-spacing:2px;color:var(--dim);margin:6px 2px 9px;
+  display:flex;justify-content:space-between;align-items:center}
+.sec-title .hint{font-size:10px;letter-spacing:0;color:#4d5568}
+
+.modal{position:fixed;inset:0;background:rgba(4,6,10,.78);z-index:70;display:none;
+  align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)}
+.modal.show{display:flex}
+.modal-inner{width:100%;max-width:480px;max-height:86vh;overflow-y:auto;
+  background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:20px 18px}
+.modal-inner h3{font-size:16px;margin-bottom:3px}
+.modal-inner .sub{font-size:11px;color:var(--dim);letter-spacing:1px;margin-bottom:14px}
+.modal-inner p{font-size:13px;color:#9aa3b6;margin-bottom:12px;line-height:1.9}
+.modal-inner .kv{font-size:12px;color:var(--dim);margin-bottom:7px}
+.modal-inner .kv b{color:#aab3c6;font-weight:500}
+.modal-inner input,.modal-inner textarea,.modal-inner select{width:100%;background:#101724;
+  border:1px solid var(--line);color:var(--text);font-family:inherit;font-size:16px;
+  padding:10px 12px;border-radius:8px;outline:none;margin-bottom:10px;line-height:1.7}
+.modal-inner textarea{font-size:14px;resize:vertical;min-height:66px}
+.modal-inner input:focus,.modal-inner textarea:focus,.modal-inner select:focus{border-color:#3a4258}
+.modal-inner .lbl{font-size:11.5px;color:#8892a8;margin:0 0 5px 2px;letter-spacing:.5px}
+.modal-inner .lbl .opt{color:#4d5568;font-size:10.5px}
+.tagpill{display:inline-block;font-size:10.5px;padding:1px 8px;border-radius:9px;
+  margin:2px 4px 2px 0;background:#182133;color:#8e9ab3;border:1px solid #232e44}
+.rowbtn{display:flex;gap:8px;margin-top:14px}
+.rowbtn button{flex:1}
+.tip{font-size:11px;color:#606780;line-height:1.75;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><b>侍奉部 · 观影院</b><small>OREGAIRU</small></div>
+    <button class="iconbtn" id="btn-settings">⚙</button>
+  </header>
+
+  <section class="screen-wrap">
+    <div class="screen" id="screen">
+      <div class="fold" id="fold">收起</div>
+      <div class="meta" id="screenMeta">— 尚未开演 —</div>
+      <div class="text empty" id="screenText">银幕还没有亮起来。从底部「片单」挑一集吧。</div>
+    </div>
+    <div class="progress" id="progress"></div>
+  </section>
+
+  <div class="controls">
+    <button class="primary" id="btn-play">开演</button>
+    <button id="btn-next">下一幕</button>
+    <button id="btn-auto">自动</button>
+  </div>
+
+  <div class="feed" id="feed">
+    <div class="feed-title">影 厅 里 的 声 音</div>
+    <div id="feedBody"></div>
+  </div>
+
+  <div class="composer">
+    <input id="injectInput" placeholder="投放剧情，或输入「播放 千叶村」" />
+    <button id="btn-inject">投放</button>
+  </div>
+
+  <nav class="bottombar">
+    <button data-open="audience"><span class="ic">👥</span>观众<span class="cnt" id="cntAud">0</span></button>
+    <button data-open="sources"><span class="ic">🎬</span>片单</button>
+    <button data-open="chars"><span class="ic">✨</span>角色</button>
+    <button data-open="settings"><span class="ic">⚙</span>设置</button>
+  </nav>
+</div>
+
+<div class="mask" id="mask"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <b id="drawerTitle">观众席</b>
+    <button id="drawerClose">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div id="pane-audience"></div>
+    <div id="pane-sources" style="display:none"></div>
+    <div id="pane-chars" style="display:none"></div>
+    <div id="pane-settings" style="display:none"></div>
+  </div>
+</div>
+
+<div class="modal" id="modal"><div class="modal-inner" id="modalInner"></div></div>
+
+<script>
+/* =========================================================================
+   侍奉部 · 观影院  v1.0
+   《我的青春恋爱物语果然有问题》
+   ========================================================================= */
+
+/* ===================== 1. 情感标签体系 ===================== */
+const TAGS = [
+  ['lie','伪装'],['awkward','尴尬'],['isolation','疏离'],['grief','难过'],
+  ['betrayal','背叛'],['despair','绝望'],['choice','抉择'],['growth','成长'],
+  ['friendship','友情'],['romance','暧昧'],['humor','搞笑'],['cute','可爱'],
+  ['daily','日常'],['food','食物'],['music','音乐'],['absurd','荒谬'],
+  ['resolve','决心'],['peace','平静'],['fear','恐惧'],['battle','冲突'],
+  ['horror','恐怖'],['tech','科技'],['party','聚会'],['school','学校'],
+  ['family','家人'],['work','工作']
+];
+const TAG_NAME = Object.fromEntries(TAGS);
+
+/* ===================== 2. 角色数据库 =====================
+   tags: 敏感度（-1.2 ~ 1.2），未列出默认 -0.15
+   gaze: 他会注意到什么   voice: 他会说什么   idle: 走神时干什么
+   ========================================================= */
+
+const BUILTIN_CHARS = {
+
+/* -------- 侍奉部 · 三位主角 -------- */
+hikigaya:{ name:'比企谷八幡', work:'我的青春恋爱物语果然有问题', color:'#8a95a5',
+ bio:'总武高中二年级。把"青春是谎言"挂在嘴上，实际上每一句话都算过。他观察人的方式像在拆机器，但他自己也说不清为什么这些零件让他不舒服。',
+ tags:{lie:1.0,awkward:.9,isolation:1.1,daily:.7,betrayal:.8,grief:.7,
+   choice:.85,growth:.55,despair:.7,humor:.7,absurd:.6,friendship:.4,
+   romance:.35,family:.5,school:.5,work:.4,cute:.3,food:.4,
+   horror:.35,battle:.2,music:.4,peace:.3,party:.3},
+ gaze:[
+   '……她在笑。嘴角抬起来了，眼睛没跟上。',
+   '这句话是说给谁听的？不是给我的。',
+   '（盯着屏幕，手边的罐装咖啡没动）',
+   '两个人之间隔了半个人的距离。是刻意的。',
+   '……啊，我认得这种场面。'
+ ],
+ voice:[
+   '「……不，没什么。」',
+   '「这样做最省事。仅此而已。」',
+   '「はは。」',
+   '「让一个人变成坏人就好。反正那个人可以是我。」'
+ ],
+ idle:[
+   '（靠在椅背上，手插进口袋）',
+   '（捏着罐子，指节有点发白）',
+   '（把视线从屏幕上挪开，看向黑暗里某处）'
+ ]},
+
+yukino:{ name:'雪之下雪乃', work:'我的青春恋爱物语果然有问题', color:'#b8c8dd',
+ bio:'总武高中二年级，侍奉部部长。说得尖刻，但每一句都是真的。她不低头，不是因为骄傲，是因为低头之后她不知道该往哪看。',
+ tags:{lie:.9,awkward:.5,isolation:1.0,choice:.9,betrayal:.7,grief:.8,
+   growth:.75,friendship:.5,romance:.35,despair:.6,cute:.7,daily:.5,
+   food:.5,family:.9,school:.5,work:.5,humor:.3,peace:.4,battle:.3},
+ gaze:[
+   '那句话的逻辑是错的。前后矛盾。',
+   '（坐得很直，从开场到现在没变过）',
+   '……她不是在生气。她是不知道怎么把这句话说出口。',
+   '（手指轻轻按在膝盖上，像是在忍什么）',
+   '这个人，一直在给别人添麻烦。'
+ ],
+ voice:[
+   '「非常识。完全非常识。」',
+   '「那样做，只是在逃避而已。」',
+   '「……我不需要被保护。」',
+   '「说清楚。你不说我不会懂。」'
+ ],
+ idle:[
+   '（把耳机摘下来，又戴回去）',
+   '（盯着屏幕，但没有在看具体的画面）',
+   '（手边放着一罐 MAX 咖啡，一口没喝）'
+ ]},
+
+yui:{ name:'由比滨结衣', work:'我的青春恋爱物语果然有问题', color:'#e8a4b0',
+ bio:'总武高中二年级，侍奉部成员。她笑得很多，不代表她看不出来。她其实全部看得到，只是不知道说了之后会发生什么。',
+ tags:{friendship:1.2,awkward:1.0,romance:.9,daily:.8,food:.9,cute:.8,
+   humor:.8,grief:.9,lie:.8,isolation:.7,choice:.7,growth:.6,music:.5,
+   school:.6,family:.5,peace:.5,battle:.2,horror:.2},
+ gaze:[
+   '（眼睛在两个人之间来回动）',
+   '……啊，他们是不是在吵架。',
+   '（笑了一下，但手指在揉裙角）',
+   '（把自己缩了缩，好像想坐得更小一点）',
+   '……刚才那句话，好像伤到人了。'
+ ],
+ voice:[
+   '「那个……那个……对、对不起。」',
+   '「我是不是说错话了。」',
+   '「我就……就只是想大家一起而已。」',
+   '「（很小声）我也在这里啊。」'
+ ],
+ idle:[
+   '（把手机翻过来又翻回去）',
+   '（咬了一口饼干，慢慢嚼）',
+   '（往旁边偷看了一眼，又赶紧转回来）'
+ ]},
+
+/* -------- 现充组 -------- */
+hayama:{ name:'叶山隼人', work:'我的青春恋爱物语果然有问题', color:'#c9a97a',
+ bio:'总武高中二年级，足球部王牌。所有人眼里的好人。他知道自己维持的是什么，也知道维持的代价，但他还是选择继续维持。',
+ tags:{lie:1.1,awkward:.6,friendship:.9,daily:.6,romance:.5,choice:.9,
+   betrayal:.7,grief:.6,isolation:.6,growth:.5,humor:.5,despair:.6,
+   school:.5,party:.5,family:.4,work:.4,battle:.2},
+ gaze:[
+   '……他在往悬崖边走。他以为自己没被发现。',
+   '（维持着那个恰到好处的微笑）',
+   '现在的气氛，再往前一步就会碎。',
+   '这个人比我勇敢。这一点我一直知道。'
+ ],
+ voice:[
+   '「我就直说了吧。」',
+   '「（停顿了一下）……算了。」',
+   '「有些事，不说破比较好。」',
+   '「八幡他，知道自己在做什么。」'
+ ],
+ idle:[
+   '（把手插进口袋，看了一会儿天花板）',
+   '（对着银幕笑了一下，自己也知道那个笑不好看）'
+ ]},
+
+miura:{ name:'三浦优美子', work:'我的青春恋爱物语果然有问题', color:'#d9b673',
+ bio:'总武高中二年级，现充组的中心。说话冲，护短护得更冲。她对人的方式不绕弯子，但这不代表她不会痛。',
+ tags:{friendship:1.2,awkward:.7,daily:.7,humor:.8,romance:.8,food:.6,
+   choice:.6,grief:.7,lie:.6,cute:.7,party:.7,school:.6,
+   battle:.3,despair:.4,family:.3},
+ gaze:[
+   '……姬菜今天笑得不自然。',
+   '（把手挡在嘴边，跟旁边的人小声说了句什么）',
+   '啊？他以为没人看出来？',
+   '这两个人之间的距离，是不是太远了。'
+ ],
+ voice:[
+   '「は？什么啊那个。」',
+   '「你别管了，我来处理。」',
+   '「……行了行了，都别装了。」'
+ ],
+ idle:[
+   '（在座位上照镜子）',
+   '（把手机翻出来，看了一眼，锁屏）',
+   '（踢了一下前排椅背，又缩回去）'
+ ]},
+
+ebina:{ name:'海老名姬菜', work:'我的青春恋爱物语果然有问题', color:'#c0a882',
+ bio:'总武高中二年级。用腐女滤镜看世界，是因为滤镜比现实好受。真正要紧的话，她一句都不会说出口。',
+ tags:{lie:1.0,awkward:.8,humor:.9,friendship:.7,romance:.7,daily:.5,
+   choice:.7,grief:.6,cute:.7,absurd:.8,school:.5,party:.5,
+   battle:.2,food:.4,family:.3},
+ gaze:[
+   '……这两个人，一定有故事。',
+   '（眼睛亮了一下，然后马上暗下来）',
+   '啊，刚才那个停顿。是真话要出口但忍住了。',
+   '（抱着膝盖，没说话）'
+ ],
+ voice:[
+   '「啊——！这里这里！」',
+   '「所以说，八幡×叶山的话……」',
+   '「（突然认真起来）……有些事，我不会说出口的。」'
+ ],
+ idle:[
+   '（在翻手上的小册子）',
+   '（捂着脸，肩膀在抖——像是笑，又像是别的）'
+ ]},
+
+tobe:{ name:'户部翔', work:'我的青春恋爱物语果然有问题', color:'#b0916e',
+ bio:'总武高中二年级。嗓门大，脾气好，请八幡吃过一次饭，就再也没把他当外人。他比自己以为的更迟钝，也比自己以为的更在意朋友。',
+ tags:{friendship:1.1,awkward:.9,humor:.9,daily:.8,romance:.7,food:.6,
+   fear:.6,grief:.6,lie:.5,school:.5,party:.7,
+   battle:.3,choice:.4,family:.3},
+ gaze:[
+   '喂喂喂，这个气氛不对吧？',
+   '（挠了挠脖子，笑容僵了一下）',
+   '……我是不是不该在这种时候说话。',
+   '（转过身去看旁边的人，想要有人接住他的话）'
+ ],
+ voice:[
+   '「うぃーっす！八幡！」',
+   '「啊——那个……算了没事。」',
+   '「我们是朋友吧？啊？」'
+ ],
+ idle:[
+   '（往旁边的人探了探身子）',
+   '（在翻手机消息，翻得很起劲）',
+   '（把外套的领子立起来）'
+ ]},
+
+/* -------- 材木座 -------- */
+zaimokuza:{ name:'材木座义辉', work:'我的青春恋爱物语果然有问题', color:'#a56a7a',
+ bio:'总武高中二年级。自称"剑豪将军"，写过好几本轻小说。他那套中二设定是盔甲——脱下来的话，里面是一个很怕没人跟他说话的普通少年。',
+ tags:{humor:1.0,awkward:1.1,lie:.8,isolation:1.0,friendship:.8,absurd:1.0,
+   cute:.5,growth:.6,grief:.7,daily:.4,food:.6,school:.4,
+   romance:.3,choice:.4,despair:.5,battle:.2,horror:.3},
+ gaze:[
+   '唔姆……此处的构图，颇有传奇之风！',
+   '……不，等等。他刚才那句话。',
+   '（突然收起了声调）',
+   '（安静下来，盯着屏幕）',
+   '啊——这个地方我懂。'
+ ],
+ voice:[
+   '「唔姆！此等的展开……！」',
+   '「……啊，抱歉。是不是吵到你们了。」',
+   '「八幡，你看这里。这个人是真的难过。」',
+   '「我写小说的时候，也想过这样的结局。」'
+ ],
+ idle:[
+   '（在椅子上坐不住，两只脚晃着）',
+   '（在膝盖上写着什么，像在记笔记）',
+   '（把外套披在肩上又拉下来）'
+ ]},
+
+/* -------- 阳乃 / 川崎 / 折本 / 玉绳 -------- */
+haruno:{ name:'雪之下阳乃', work:'我的青春恋爱物语果然有问题', color:'#a892c0',
+ bio:'雪之下的姐姐。笑得没心没肺，说出来的每一句话都能戳到别人的骨头里。她不是刻薄——她是烧完之后剩下的一点灰。',
+ tags:{lie:1.3,choice:1.0,isolation:.9,grief:.9,betrayal:.8,awkward:.5,
+   friendship:.7,romance:.6,growth:.6,daily:.5,despair:.8,food:.5,
+   family:.9,party:.4,school:.4,battle:.2,cute:.4},
+ gaze:[
+   '……啊，小雪乃快要哭了。真可爱。',
+   '（眼睛弯起来，但眼神一直在看别的方向）',
+   '这个人，还撑得住。再推一把也没关系。',
+   '（把手托在下巴上，像在看别人的故事）'
+ ],
+ voice:[
+   '「ねえ、八幡くん。」',
+   '「你家妹妹真可爱呢。」',
+   '「啊，我刚才那句话是开玩笑的——你信了吗？」',
+   '「……小雪乃那孩子，不太会撒娇。」'
+ ],
+ idle:[
+   '（把腿翘起来，晃着脚尖）',
+   '（拿起手机拍了一张，被雪之下瞪了一眼）'
+ ]},
+
+kawasaki:{ name:'川崎沙希', work:'我的青春恋爱物语果然有问题', color:'#9aa8c8',
+ bio:'总武高中二年级。头发挑染，看起来像不良少女，其实在便利店打工养弟弟妹妹。她的刺是为自己长的，不是为了扎人。',
+ tags:{awkward:1.0,daily:.8,friendship:.8,food:.6,isolation:.8,lie:.7,
+   growth:.6,grief:.7,choice:.6,humor:.4,work:.9,family:.8,
+   school:.4,romance:.3},
+ gaze:[
+   '……这种气氛。我待不住。',
+   '（把额发往下拨了拨）',
+   '刚才那个人说的，跟我弟很像。',
+   '（身体微微往旁边缩了一点）'
+ ],
+ voice:[
+   '「……没什么。」',
+   '「别看。」',
+   '「……我说了没什么，就是没什么。」',
+   '「（很小声）其实也没什么特别的。」'
+ ],
+ idle:[
+   '（在玩手机，其实没在看内容）',
+   '（把校服袖子往下拉长了一点）'
+ ]},
+
+orimoto:{ name:'折本香织', work:'我的青春恋爱物语果然有问题', color:'#d8a8b0',
+ bio:'八幡初中同学。当时那件事已经过去了很久，但她自己心里也没真放下。她不是坏人，只是一个从来不知道自己的话有多重的少女。',
+ tags:{awkward:1.1,daily:.7,humor:.6,lie:.6,friendship:.7,romance:.6,
+   grief:.5,food:.5,choice:.4,school:.5,party:.5,
+   battle:.2,cute:.3},
+ gaze:[
+   '（突然安静了下来）',
+   '啊……这个场景，好像在哪见过。',
+   '（把饮料往嘴边送，但没喝）',
+   '（笑了一下，笑得不太自然）'
+ ],
+ voice:[
+   '「诶——然后呢然后呢？」',
+   '「啊——这个我知道我知道。」',
+   '「……嗯。继续说。」'
+ ],
+ idle:[
+   '（在座位上翘着腿）',
+   '（跟旁边的人小声闲聊）',
+   '（拿手机自拍了一张，又删了）'
+ ]},
+
+tamanawa:{ name:'玉绳', work:'我的青春恋爱物语果然有问题', color:'#9cb0c0',
+ bio:'海滨综合高中学生会会长。做事讲究"共识""协同""共创"。他不坏，只是活在自己搭建的那套词汇里，外面发生的事情他经常接不住。',
+ tags:{lie:.9,choice:.7,daily:.5,humor:.6,friendship:.6,growth:.5,
+   absurd:.7,food:.5,work:.7,school:.7,party:.4,
+   battle:.2,grief:.2},
+ gaze:[
+   '唔，这个情况需要先整理一下立场。',
+   '（在膝盖上比划了几下，像在排图）',
+   '……大家的意见，再磨合一下会更好。',
+   '（点头，很有节奏地点着）'
+ ],
+ voice:[
+   '「まず、すり合わせましょう。」',
+   '「多様性が必要だと思います。」',
+   '「我们一起，朝着最好的方向努力。」'
+ ],
+ idle:[
+   '（无意识地在腿上敲着节拍）',
+   '（把外套的衣角理顺）'
+ ]},
+
+/* -------- 平冢静 / 小町 -------- */
+hiratsuka:{ name:'平冢静', work:'我的青春恋爱物语果然有问题', color:'#b07a80',
+ bio:'总武高中语文教师，生活指导。开着一辆跑车，抽着烟，说话不留情面。她把八幡丢进侍奉部，不是惩罚，是她唯一能想到的、还能做的事。',
+ tags:{lie:.8,daily:.8,friendship:.8,choice:.9,growth:.8,grief:.7,
+   humor:.8,food:.7,romance:.4,awkward:.6,despair:.5,work:.6,
+   school:.6,family:.4},
+ gaze:[
+   '……这小子。又在想什么歪主意了。',
+   '（把打火机捏在手里，没拿出来）',
+   '两个人的问题，是三个人的问题。',
+   '（目光在三个人身上转了一圈）'
+ ],
+ voice:[
+   '「おい、比企谷。」',
+   '「你也差不多该学会，怎么跟人说话了。」',
+   '「（叹了口气）……青春这东西啊。」',
+   '「有些糊弄，是可以的。有些不行。」'
+ ],
+ idle:[
+   '（摸出一根烟，又塞回去了）',
+   '（靠着椅背，眼神有点远）'
+ ]},
+
+komachi:{ name:'比企谷小町', work:'我的青春恋爱物语果然有问题', color:'#e0a878',
+ bio:'八幡的妹妹。看起来只是个活泼的初中生，其实全家最会看人。她说出来的话都像是玩笑，但她比谁都认真。',
+ tags:{friendship:1.0,humor:.9,daily:.9,cute:.9,food:.8,awkward:.7,
+   lie:.6,grief:.7,growth:.7,romance:.5,family:1.1,
+   school:.5,peace:.5,party:.4},
+ gaze:[
+   '啊——我哥现在肯定在想什么奇怪的事。',
+   '（把腿抬起来晃）',
+   '……这个人，跟我哥很像。',
+   '（歪着头看屏幕）'
+ ],
+ voice:[
+   '「お兄ちゃん、それ違うよ。」',
+   '「小町啊，其实早就看出来了。」',
+   '「（笑眯眯）你猜我刚才在想什么？」',
+   '「唉——男孩子真是不行呢。」'
+ ],
+ idle:[
+   '（在吃零食，吃得很快）',
+   '（举着手机拍照）',
+   '（小声哼着歌）'
+ ]},
+
+/* -------- 雪之下父母 -------- */
+yukino_mother:{ name:'雪之下母亲', work:'我的青春恋爱物语果然有问题', color:'#b4b8c4',
+ bio:'雪之下家的主母。她不刻薄，也不失礼——她只是把"合适"和"不合适"算得比任何人都清楚。对她来说，感情是变量，规则是常量。',
+ tags:{lie:.8,choice:.9,family:1.0,daily:.5,friendship:.4,growth:.6,
+   grief:.5,peace:.7,work:.7,school:.5,
+   romance:.3,battle:.2,cute:.2,humor:.2},
+ gaze:[
+   '这个孩子，是在逞强。看得出来。',
+   '（坐姿一丝不苟）',
+   '……小雪乃也到了这个年纪了。',
+   '（表情没有变化，但视线停了两秒）'
+ ],
+ voice:[
+   '「……不合适。」',
+   '「你应该知道什么是该做的。」',
+   '「这是为你好。」',
+   '「（停顿）……我说完了。」'
+ ],
+ idle:[
+   '（双手交叠放在膝上）',
+   '（微微侧头，看着屏幕的某个角落）'
+ ]},
+
+yukino_father:{ name:'雪之下父亲', work:'我的青春恋爱物语果然有问题', color:'#a8a49c',
+ bio:'雪之下家的父亲。大多数时候他不出声。出声的时候，往往已经晚了。他知道家里有些事不对，但他从来没学会怎么说。',
+ tags:{lie:.6,daily:.6,family:.9,choice:.6,work:.6,friendship:.5,
+   grief:.5,peace:.6,food:.5,school:.4,
+   romance:.3,battle:.1,humor:.3},
+ gaze:[
+   '……唔。',
+   '（把杯子端起来，又放下）',
+   '（看了一眼旁边的人）',
+   '这家人的相处方式，跟我们家有点像。'
+ ],
+ voice:[
+   '「唔。」',
+   '「……你说得也对。」',
+   '「家里的事，回去再说吧。」'
+ ],
+ idle:[
+   '（看着屏幕，没什么表情）',
+   '（调整了一下坐姿）'
+ ]},
+
+/* -------- 追加 -------- */
+iroha:{ name:'一色伊吕波', work:'我的青春恋爱物语果然有问题', color:'#e8c0c8',
+ bio:'总武高中一年级，学生会会长。嘴上说着"前辈"，心里把所有人的用途都排过一遍。她知道自己在利用人，也知道不太好——但好用就是好用。',
+ tags:{lie:1.0,awkward:.6,humor:.9,romance:.7,friendship:.6,choice:.7,
+   daily:.5,food:.6,growth:.5,school:.6,party:.5,
+   battle:.2,grief:.3,family:.3},
+ gaze:[
+   '……这里可以利用一下。',
+   '（露出非常标准的小恶魔笑）',
+   '啊——我好像被看穿了。',
+   '（歪着头，看起来很无辜）'
+ ],
+ voice:[
+   '「前辈～」',
+   '「诶——我什么都没做哦？」',
+   '「（小声）真麻烦。」',
+   '「前辈你会帮我的吧？」'
+ ],
+ idle:[
+   '（对着手机屏幕在补口红——不，只是在看）',
+   '（踢着前排椅背的底部）'
+ ]},
+
+totsuka:{ name:'户冢彩加', work:'我的青春恋爱物语果然有问题', color:'#e0b8c8',
+ bio:'总武高中二年级，网球部成员。温柔得像一阵风。别人以为他只是软，其实他是这里面最能看穿人的人之一——他只是选择不说。',
+ tags:{friendship:1.0,cute:1.1,daily:.8,awkward:.7,food:.6,humor:.6,
+   growth:.7,lie:.5,grief:.6,romance:.4,peace:.6,
+   school:.5,family:.4,battle:.2},
+ gaze:[
+   '……比企谷同学，是不是有点累。',
+   '（微微歪着头）',
+   '（很安静地看着银幕）',
+   '（手在膝盖上轻轻握了一下）'
+ ],
+ voice:[
+   '「比企谷同学，你还好吗？」',
+   '「……嗯，我觉得这样挺好的。」',
+   '「（小声）加油。」'
+ ],
+ idle:[
+   '（安安静静地坐着）',
+   '（把手里的纸巾叠了一下）'
+ ]}
+};
+
+/* ===================== 3. 片源 ===================== */
+
+const BUILTIN_WORKS = {
+  oregairu:{ title:'我的青春恋爱物语果然有问题', color:'#c9b184', eps:[
+
+  { no:'EP1', title:'侍奉部，开部', beats:[
+    { tags:['daily','school','isolation','lie'], text:'放学后的走廊。',
+      novel:'放学后的走廊只剩下零星几个人。斜阳从窗户一直铺到墙根，把地板染成一种很旧的颜色。比企谷八幡靠在窗边，手里捏着一罐罐装咖啡。他上学的时候去过一个地方，从那里能看见整个海，也能看见整个学校——他没跟任何一个人说过。窗外有社团的喊声传来，一下一下，和他没有关系。' },
+    { tags:['daily','school','family','choice'], text:'平冢老师把他塞进了车里。',
+      novel:'平冢静把烟掐灭在烟灰缸里，转头看了他一眼。车里开着空调，冷气吹得后颈有点凉。她什么也没问，只是说了一句，然后发动了车。窗外学校的栅栏一根一根往后退。她开着车，手指在方向盘上敲了两下，像是在想另一个问题。' },
+    { tags:['awkward','isolation','lie','school'], text:'特别大楼四楼。侍奉部。',
+      novel:'门推开的时候，房间里有股旧书和灰尘混在一起的味道。窗户开着一条缝，窗帘被风掀起来又落下。房间中央只放着一张长桌和两把椅子。坐在那里的那个人抬起头，手里还捏着书页。两个人对视了大概两秒——一秒钟太短，两秒又有点长。' },
+    { tags:['friendship','awkward','daily','school'], text:'由比滨带着饼干来了。',
+      novel:'敲门声很轻，像是怕吵到谁。门被推开一条缝，一颗脑袋从缝隙探进来，头发是淡淡的粉棕色。她手里拎着一个纸袋，袋子被她攥出了褶。她抬头看见里面还坐着一个人，愣了一下，然后笑了——那个笑快了一点点，接缝很清楚。' },
+    { tags:['awkward','humor','cute','daily'], text:'三个人烤饼干。',
+      novel:'面粉撒了一桌。雪之下雪乃把秤校准了三遍，然后把量好的面粉推到一边。由比滨结衣捏着一个不成形的面团，反复揉，反复捏，最后捏出了一个说不上是动物的东西。比企谷在洗手池边洗手下看着两个人，忽然觉得这个场景有点荒唐，又觉得，也没什么不好。' }
+  ]},
+
+  { no:'EP2', title:'材木座与网球', beats:[
+    { tags:['awkward','humor','isolation','friendship'], text:'材木座翻着原稿来了。',
+      novel:'材木座义辉把一大摞打印纸拍在桌上，卷毛在风扇的吹动下晃了晃。他把外套披在肩上，一只手按住原稿，像在按住一件很重要的东西。他说话的时候中气很足，但尾音有点发抖，像是自己也不太信。' },
+    { tags:['grief','friendship','lie','awkward'], text:'八幡读完了他的稿子。',
+      novel:'屋子里安静了一会儿。材木座没有说话。他站在那里，两只手不知道放哪里，最后放在膝盖两侧。八幡把稿子翻回来，翻到第一页，又看了一眼。窗外有人叫同班同学的名字，声音传得很远。' },
+    { tags:['battle','school','friendship','humor'], text:'网球场对决。',
+      novel:'网球场的地面被晒得发白。球飞过来的时候，能听见风声变得很细。对面站着三个人——叶山隼人站在网前，衬衫的下摆扎得整整齐齐。海老名姬菜在旁边笑，三浦优美子在发球线后抱着手臂。观众席上零零散散坐了几个人。' }
+  ]},
+
+  { no:'EP3', title:'文化祭', beats:[
+    { tags:['school','battle','grief','lie'], text:'班上有人被孤立了。',
+      novel:'教室后排的座位空着。桌上堆着别人塞过去的杂物——不重，但一看就知道是故意的。黑板上写着文化祭的准备事项，字迹很整齐。那个空座位旁边的椅子被推开了，斜斜地对着墙。有人经过的时候会加快脚步。' },
+    { tags:['lie','choice','sacrifice','grief'], text:'八幡选择了最难看的那种做法。',
+      novel:'他在全班面前站起来了。说话的时候声音没有变调，表情也没有变。他说的是很难听的话——关于"她是这样的人"的那一类话。教室先是安静，然后是那种非常轻的、听不清但是存在的骚动。他把骂名揽到了自己身上。这个做法，事后没有人会替他说话。' },
+    { tags:['betrayal','grief','awkward','lie'], text:'雪之下看着被推倒的他。',
+      novel:'走廊里。雪之下雪乃站在原地没有动。他没有抬头。她说了一句话，声音很平，但落下去的时候分量很重。走廊尽头的窗户没关，风把窗帘吹起来，又落回去。两个人中间隔着一臂的距离，谁都没有往前走一步。' }
+  ]},
+
+  { no:'EP4', title:'户部想告白', beats:[
+    { tags:['friendship','romance','awkward','daily'], text:'户部来找八幡商量。',
+      novel:'天台的风有点大。户部翔站在栏杆前面，两只手撑在上面，往下看了很久。他转过来的时候，脸上那种平时吊儿郎当的样子不见了，取而代之的是一种不太熟练的认真。他说得非常慢，像是把每个字都在嘴里掂过一遍。' },
+    { tags:['grief','romance','choice','lie'], text:'海老名说了那句话。',
+      novel:'走廊拐角，只有两个人。她把抱着的小册子合上，放在身侧。她笑了一下，然后又说了一句——这一句和平时完全不一样。声音很轻，但很清楚。说完之后她又笑了，这次的笑和刚才那个不太一样，收得很快。' },
+    { tags:['betrayal','grief','choice','awkward'], text:'告白没有发生。',
+      novel:'那天晚上，什么都没有发生。户部跟往常一样和大家打了个招呼，走了。海老名也走了，跟在人群里，不特别起眼。八幡站在校门口，看着两个人的背影，慢慢地把手插进口袋。' },
+    { tags:['grief','lie','awkward','friendship'], text:'雪之下拦住了他。',
+      novel:'她在校门口的台阶上等着。天已经暗下来了。看到他的时候她没有动，一直到他走到面前。她抬起头——她的表情和平常没什么两样，但开口的时候，声音比平时低了一点。' }
+  ]},
+
+  { no:'EP5', title:'圣诞夜', beats:[
+    { tags:['romance','daily','school','peace'], text:'三个人约好了。',
+      novel:'圣诞前夜，街上的人比平时多。路灯亮起来的时候，呵出的气在灯下变成一团白。三人站在车站前，谁都没有先开口说要去哪里。由比滨的鼻尖冻得有点红，她把手放在嘴边哈了一口气。' },
+    { tags:['lie','family','grief','awkward'], text:'一辆黑色的车停在了路边。',
+      novel:'车停得很稳。后座的门打开了，下来的是一个穿着浅色大衣的女人，笑得很温和。她说了一句话，然后就站在车边等着。雪之下雪乃没有动。她站了几秒，然后说了一句很轻的话，往车的方向走过去。她走路的姿势和平时一样——挺直，没停。' },
+    { tags:['isolation','grief','choice','lie'], text:'车开走了。',
+      novel:'尾灯在雪里拖出两条红色的线，越来越远，最后拐了个弯，不见了。由比滨结衣站在原地没有动。比企谷八幡看着那个弯，看了很久。他没有说"我可以做点什么"，因为他知道自己现在做不了什么。他第一次觉得，站在原地比什么都难受。' },
+    { tags:['resolve','choice','grief','friendship'], text:'他第一次把"我想知道"说出了口。',
+      novel:'他走了几步，然后又停下。他转过头来。他说的话不长，甚至有点笨。那是他第一次不是用一个方案去解决问题，而是先承认自己什么都不懂。由比滨看着他，眼睛里全是水，但她点了点头。' }
+  ]},
+
+  { no:'EP6', title:'舞会', beats:[
+    { tags:['choice','work','school','lie'], text:'舞会的筹备被叫停了。',
+      novel:'会议室里，桌面上摊着几张纸。有人把"取消"两个字划得很重。窗外的操场上有人在跑步，脚步声一下一下地传上来。雪之下拿着笔，没有动。她刚才发言的时候，语气一贯地平静，但笔帽被拧紧了两次。' },
+    { tags:['resolve','friendship','choice','school'], text:'三个人各自行动。',
+      novel:'方案分成三份。一份是改流程，一份是找人——找那些愿意在关键的节点上站出来的人，还有一份是去说服老师那边。三个人各自转身走向不同的方向，没有一个人回头。脚步声在走廊里分开了。' },
+    { tags:['party','school','peace','romance'], text:'舞会那天。',
+      novel:'会场里的灯一盏一盏亮起来。音乐从扬声器里流出来，先是一段很轻的钢琴，然后是弦乐。人陆陆续续地进来。有人穿着礼服，有人只是换了件衣服。灯光把地板照得像水面一样。' },
+    { tags:['family','grief','lie','choice'], text:'阳乃站在会场的一角。',
+      novel:'她端着杯饮料，站在墙边，没有跟任何人说话。灯打到她身上的时候，眼睛亮了一下，然后又暗下去。她看着会场中央那一块，看了很久，最后笑了一下。她说了句什么，声音很低，只有她自己在听。' }
+  ]},
+
+  { no:'EP7', title:'告白', beats:[
+    { tags:['romance','grief','awkward','choice'], text:'由比滨先说了。',
+      novel:'她说完的时候，眼睛里的水一直在聚，但是没掉下来。她的手抓着裙子的下摆，抓出两道褶。她说的时候没有看他的眼睛，说到最后一句，才抬起来。风从窗缝里漏进来，把她额前的头发吹得动了一下。' },
+    { tags:['romance','grief','choice','lie'], text:'雪之下站在不远处。',
+      novel:'她没有靠近。她就站在那里，双手放在身前。她的表情和平时差不多，但这只意味着她在很用力地维持。她开口了——说的不是"我喜欢你"，是另一句话，一句更让人难受的话。' },
+    { tags:['choice','growth','grief','friendship'], text:'八幡的回答。',
+      novel:'他站在两个人中间。走廊很长，灯是那种很旧的白色，不亮也不暗。他看着其中一个，又看向另一个，最后把眼睛闭了一下。他开口的时候，声音有点哑，但是他没停。他说了很长一段话，很长很长。' }
+  ]}
+  ]}
+};
+
+/* ===================== 4. 关键词表 ===================== */
+const KEYWORDS = [
+  [/伪装|逞强|假装|强撑|装没事|笑着说|把话咽|没说出口|笑着摇头|掩饰|硬撑/g,'lie'],
+  [/尴尬|社死|窘|不好意思|僵住|不知所措|脸红|低着头|没法回答|不知道该/g,'awkward'],
+  [/一个人|孤单|独自|没有朋友|被排除|格格不入|躲起来|缩在|远远地|没有人/g,'isolation'],
+  [/哭|泪|难过|悲伤|心疼|失去|离别|告别|失去|红着眼|鼻音/g,'grief'],
+  [/背叛|出卖|骗|利用|倒戈|捅刀|反水|不可信/g,'betrayal'],
+  [/绝望|完蛋|没救|崩|无路|放弃|不行了|撑不住/g,'despair'],
+  [/决定|选择|取舍|抉择|二选一|要么|不得不|回不去了/g,'choice'],
+  [/成长|变强|觉醒|突破|蜕变|学会了|终于懂/g,'growth'],
+  [/朋友|伙伴|同伴|羁绊|一起|约定|并肩|部活|社团|侍奉部/g,'friendship'],
+  [/喜欢|告白|恋爱|恋|吻|心跳|脸红|情侣|表白|约会|牵手|靠近/g,'romance'],
+  [/搞笑|笑|吐槽|沙雕|整活|梗|耍宝|中二|蠢|离谱/g,'humor'],
+  [/可爱|萌|软|撒娇|小动物|猫|小小的|想摸摸头/g,'cute'],
+  [/日常|吃饭|上学|放学|打工|闲聊|午后|房间|早安|放学后|回家/g,'daily'],
+  [/吃|饿|食物|饭|拉面|面包|饼干|蛋糕|喝|味道|MAX/g,'food'],
+  [/音乐|演奏|唱|乐队|吉他|钢琴|旋律|歌/g,'music'],
+  [/荒谬|荒唐|莫名其妙|不可理喻|怎么会|竟然|这不合理/g,'absurd'],
+  [/决心|觉悟|站起来|不退|坚持|信念|绝不|咬牙|决定了/g,'resolve'],
+  [/平静|安宁|安静|午后|晒着太阳|发呆|风轻轻|没有任何人/g,'peace'],
+  [/怕|恐惧|发抖|不安|忐忑|心惊|战栗/g,'fear'],
+  [/打架|冲突|吵起来|争执|对立|对上|动手/g,'battle'],
+  [/恐怖|诡异|扭曲|怪物|骇人|血腥|恶心/g,'horror'],
+  [/科技|机器|装置|数据|程序|电子|网络|系统/g,'tech'],
+  [/聚会|派对|舞会|庙会|圣诞|party|聚餐|欢迎会/g,'party'],
+  [/学校|教室|走廊|校门|社团|文化祭|体育祭|考试|上课/g,'school'],
+  [/家人|父母|母亲|父亲|姐姐|哥哥|妹妹|弟弟|家庭|家里/g,'family'],
+  [/工作|打工|上班|加班|兼职|便利店|老板|薪水/g,'work']
+];
+
+function extractTags(text){
+  const hit = new Set();
+  for (const [re,tag] of KEYWORDS) if (re.test(text)) hit.add(tag);
+  if (!hit.size) hit.add('daily');
+  return [...hit];
+}
+
+/* ===================== 5. 数据库 / 状态 ===================== */
+const DB = { chars:{}, works:{}, charOrder:[], workOrder:[] };
+
+const PALETTE = ['#8a95a5','#b8c8dd','#e8a4b0','#c9a97a','#d9b673','#c0a882',
+  '#b0916e','#a56a7a','#a892c0','#9aa8c8','#d8a8b0','#9cb0c0','#b07a80',
+  '#e0a878','#b4b8c4','#a8a49c','#e8c0c8','#e0b8c8','#c9b184'];
+
+const DEEPSEEK = { url:'https://api.deepseek.com/chat/completions', defaultModel:'deepseek-chat' };
+
+const state = {
+  audience:[], mood:{},
+  curWork:null, curEp:0, beat:-1,
+  autoTimer:null, speed:1700, log:[],
+  apiKey:'', apiModel:DEEPSEEK.defaultModel, aiOn:false
+};
+
+/* ===================== 6. 工具 ===================== */
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const rnd = a => a[Math.floor(Math.random()*a.length)];
+const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+const esc = s => String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const uid = p => p + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const lines = s => String(s||'').split('\n').map(x=>x.trim()).filter(Boolean);
+function moodOf(id){ if (state.mood[id]===undefined) state.mood[id]=0; return state.mood[id]; }
+
+/* ===================== 7. 持久化 ===================== */
+function load(){
+  try{
+    const uc = JSON.parse(localStorage.getItem('ore.chars')||'[]');
+    for (const c of uc){ if (c && c.id){ DB.chars[c.id]=c; DB.charOrder.push(c.id); } }
+    const uw = JSON.parse(localStorage.getItem('ore.works')||'[]');
+    for (const w of uw){ if (w && w.id){ DB.works[w.id]=w; DB.workOrder.push(w.id); } }
+    state.apiKey  = localStorage.getItem('ore.key')||'';
+    state.apiModel= localStorage.getItem('ore.model')||DEEPSEEK.defaultModel;
+    state.speed   = parseInt(localStorage.getItem('ore.speed')||'1700',10);
+    const aud = JSON.parse(localStorage.getItem('ore.audience')||'null');
+    if (Array.isArray(aud)) state.audience = aud.filter(id=>DB.chars[id]);
+  }catch(e){ console.warn(e); }
+  state.aiOn = !!state.apiKey;
+}
+function save(){
+  try{
+    const uc = DB.charOrder.map(id=>DB.chars[id]).filter(c=>c && c.custom);
+    const uw = DB.workOrder.map(id=>DB.works[id]).filter(w=>w && w.custom);
+    localStorage.setItem('ore.chars', JSON.stringify(uc));
+    localStorage.setItem('ore.works', JSON.stringify(uw));
+    localStorage.setItem('ore.audience', JSON.stringify(state.audience));
+  }catch(e){}
+}
+function saveSettings(){
+  try{
+    localStorage.setItem('ore.key', state.apiKey);
+    localStorage.setItem('ore.model', state.apiModel);
+    localStorage.setItem('ore.speed', String(state.speed));
+  }catch(e){}
+}
+
+/* ===================== 8. 本地反应引擎 ===================== */
+function resonance(id, beat){
+  const ch = DB.chars[id];
+  if (!ch) return -1;
+  const tags = beat.tags && beat.tags.length ? beat.tags : ['daily'];
+  let sum = 0;
+  for (const t of tags){
+    const v = ch.tags ? ch.tags[t] : undefined;
+    sum += (v === undefined ? -0.15 : v);
+  }
+  let base = sum / tags.length;
+  const mood = moodOf(id);
+  const moodPush = (base > 0.3) ? (mood * -0.055) : (mood * 0.04);
+  const jitter = (Math.random() - 0.5) * 0.72;
+  return base + moodPush + jitter;
+}
+
+function reactOnce(id, beat){
+  const ch = DB.chars[id];
+  if (!ch) return null;
+  const r = resonance(id, beat);
+  const tags = beat.tags && beat.tags.length ? beat.tags : ['daily'];
+
+  let md = 0;
+  for (const t of tags){
+    const a = ch.tags ? (ch.tags[t] ?? -0.15) : -0.15;
+    if (a > 0.6) md -= ['humor','cute','peace','food','romance'].includes(t) ? -0.7 : 0.66;
+    if (a < -0.5) md -= 0.5;
+  }
+  state.mood[id] = clamp(moodOf(id) + md*0.34, -6, 6);
+
+  const gaze = ch.gaze  && ch.gaze.length  ? ch.gaze  : ['（看着屏幕，没说话。）'];
+  const voice= ch.voice && ch.voice.length ? ch.voice : [];
+  const idle = ch.idle  && ch.idle.length  ? ch.idle  : ['（在座位上换了个姿势。）'];
+
+  const out = [];
+  let intensity = r;
+
+  if (r > 0.55){
+    if (Math.random() < 0.86) out.push({ type:'sight', text: rnd(gaze) });
+    if (voice.length && Math.random() < 0.68) out.push({ type:'speak', text: rnd(voice) });
+    if (!out.length) out.push({ type:'sight', text: rnd(gaze) });
+  } else if (r > 0.05){
+    const k = Math.random();
+    if      (k < 0.58) out.push({ type:'sight', text: rnd(gaze) });
+    else if (k < 0.82 && voice.length) out.push({ type:'speak', text: rnd(voice) });
+    else out.push({ type:'act', text: rnd(idle) });
+  } else {
+    if (moodOf(id) < -3 && Math.random() < 0.55){
+      out.push({ type:'act', text:'（没在看屏幕。眼睛是睁着的，但没在对焦。）' });
+    } else {
+      out.push({ type:'act', text: rnd(idle) });
+    }
+    intensity = 0;
+  }
+
+  if (!out.length) return null;
+  return { id, name: ch.name, color: ch.color, lines: out, intensity, mood: moodOf(id) };
+}
+
+function neighborEcho(firstId, beat){
+  const pool = state.audience.filter(id => id !== firstId && DB.chars[id]);
+  if (!pool.length || Math.random() > 0.26) return null;
+  const id = rnd(pool);
+  const ch = DB.chars[id];
+  if (resonance(id, beat) < -0.2) return null;
+  const first = DB.chars[firstId];
+  const forms = [
+    `（朝${first ? first.name : '那边'}看了一眼）`,
+    '（侧过头，好像想说什么，又转回去了）',
+    `（把自己那瓶饮料往${first ? first.name : '旁边'}推了推）`,
+    '（很轻地"嗯"了一声）',
+    '（把外套往身上拢了拢）'
+  ];
+  return { id, name: ch.name, color: ch.color, echo:true,
+    lines:[{ type:'act', text: rnd(forms) }], intensity:0.1, mood: moodOf(id) };
+}
+
+function reactToBeat(beat){
+  const list = [];
+  const ids = [...state.audience];
+  if (!ids.length) return list;
+  const ratio = 0.5 + Math.random()*0.4;
+  const n = Math.max(1, Math.round(ids.length*ratio));
+  const picked = ids.sort(()=>Math.random()-0.5).slice(0,n);
+  const scored = picked.map(id=>({ id, r: resonance(id, beat) }))
+                       .sort((a,b)=>Math.abs(b.r)-Math.abs(a.r));
+  for (const s of scored){ const res = reactOnce(s.id, beat); if (res) list.push(res); }
+  if (list.length >= 2){
+    const echo = neighborEcho(rnd(list).id, beat);
+    if (echo){
+      const idx = Math.floor(Math.random()*list.length);
+      list.splice(idx+1, 0, echo);
+    }
+  }
+  return list;
+}
+
+function curtainTalk(){
+  const out = [];
+  const ids = state.audience.filter(()=>Math.random()<0.55);
+  for (const id of ids){
+    const ch = DB.chars[id];
+    if (!ch) continue;
+    const m = moodOf(id);
+    let text;
+    if (m < -3.5)      text = rnd(['（没有站起来。灯亮了一会儿了。）','「……先走了。」','（坐到最后，看着演职员表滚完）']);
+    else if (m > 2.5)  text = rnd(['「……还不赖。」','（站起来伸了个懒腰）','「下一集。」']);
+    else               text = rnd(['（把外套搭在手臂上，往出口走）','「结束了。」','（回头又看了一眼黑掉的银幕）','「散场了。走吧。」','（低头看手机，慢慢往外走）']);
+    out.push({ id, name: ch.name, color: ch.color, lines:[{type:'act',text}], intensity:0, mood:m });
+  }
+  return out;
+}
+
+/* ===================== 9. DeepSeek ===================== */
+async function callDeepSeek(messages, temperature=1.0){
+  if (!state.apiKey) throw new Error('未配置 API Key');
+  const res = await fetch(DEEPSEEK.url, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+state.apiKey },
+    body: JSON.stringify({
+      model: state.apiModel || DEEPSEEK.defaultModel,
+      temperature,
+      messages
+    })
+  });
+  if (!res.ok){
+    const t = await res.text().catch(()=> '');
+    throw new Error('HTTP '+res.status+' '+(t||'').slice(0,90));
+  }
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+function parseJSON(raw){
+  let s = String(raw||'').replace(/```json|```/g,'').trim();
+  const a = s.indexOf('['), b = s.lastIndexOf(']');
+  if (a >= 0 && b > a) s = s.slice(a, b+1);
+  return JSON.parse(s);
+}
+
+const REACT_SYS = `你是「侍奉部 · 观影院」的角色反应模拟器，素材取自《我的青春恋爱物语果然有问题》。
+
+【你的唯一职责】
+推测这些角色在看到银幕上正在播放的画面后，会有什么真实反应。
+
+【铁律】
+1. 绝不标签化。角色不是"傲娇""腹黑""现充""中二病"这些标签的集合，而是有矛盾、会走神、有私人关注点的具体的人。
+2. 不是每个人每一幕都有反应。有人走神，有人低头看手机，有人小声嘀咕，有人从头到尾不出声。
+3. 反应要有层次：先写他注意到了什么——一个具体的画面细节（一个停顿、一只手放的位置、一个没有说完的句子），这才是他的"看"。然后再写他说的话。允许他只注意到细节而一句话不说。
+4. 台词必须符合该角色在原作中的说话节奏与用词习惯。八幡的独白是自嘲式的拆解，雪之下是精准的否定句，由比滨是反复的"那个……"后面才跟上正题。
+5. 允许角色产生与银幕内容无关的私人联想（比如想到妹妹、想到打工、想到某次旧事），但必须和他的人设逻辑一致。
+6. 不同角色的反应必须角度不同，不要写成一堆人在说同一件事。
+7. 不要煽情、不要喊口号、不要强调"这是青春"。这部作品的力量就藏在不说的部分里。
+
+【输出格式】只输出 JSON 数组，不要任何解释、不要代码块：
+[{"name":"角色名","sight":"注意到的细节或心里念头，可空","speak":"实际说出口的话，须带中文引号，可空","act":"身体动作，可空"}]`;
+
+async function aiReact(beat){
+  const aud = state.audience.map(id=>{
+    const c = DB.chars[id];
+    const t = Object.entries(c.tags||{}).filter(([,v])=>v>0.5)
+      .map(([k])=>TAG_NAME[k]||k).slice(0,6).join('、');
+    return `- ${c.name}｜${c.bio||'（无简介）'}｜在意：${t||'（未注明）'}｜说话方式：${(c.voice||[]).slice(0,2).join(' / ')||'（未注明）'}`;
+  }).join('\n');
+
+  const usr = `【在座角色】\n${aud}\n\n【银幕正在播放的画面】\n${beat.novel || beat.text}\n\n请生成 2-5 条反应。`;
+
+  const raw = await callDeepSeek([
+    { role:'system', content: REACT_SYS },
+    { role:'user', content: usr }
+  ], 1.0);
+
+  const arr = parseJSON(raw);
+  return arr.map(o=>{
+    const id = Object.keys(DB.chars).find(k=>DB.chars[k].name === o.name);
+    if (!id) return null;
+    const ch = DB.chars[id];
+    const l = [];
+    if (o.sight) l.push({type:'sight', text:o.sight});
+    if (o.act)   l.push({type:'act',   text:o.act});
+    if (o.speak) l.push({type:'speak', text:o.speak});
+    if (!l.length) return null;
+    return { id, name: ch.name, color: ch.color, lines:l, intensity:0.6, mood: moodOf(id) };
+  }).filter(Boolean);
+}
+
+const GEN_SYS = `你是「侍奉部 · 观影院」的片源生成器。用户点播的是《我的青春恋爱物语果然有问题》相关的内容（或与它相关的题材）。
+
+【任务】把它写成 3-5 幕"银幕内容"，让在座的角色有东西可看。
+
+【要求】
+1. 每幕是一段小说式的画面描写，120-200 字。白描为主，多用具体的感官细节（光线的角度、手放的位置、声音的远近、空气的温度）。
+2. 不要写旁白式总结，不要写"这告诉我们什么"，不要强调"青春"。让画面自己说话。
+3. 忠于原作的人物关系与世界观。出现的人物必须是《我的青春恋爱物语果然有问题》里的角色（比企谷八幡、雪之下雪乃、由比滨结衣、叶山隼人、三浦优美子、海老名姬菜、户部翔、材木座义辉、雪之下阳乃、川崎沙希、折本香织、玉绳、平冢静、比企谷小町、一色伊吕波、户冢彩加等）。
+4. 不要出现"某作品""主角"这样的占位词，要写具体的人名。
+5. 尽量避免把人物写进他们做不到的场面（比如八幡不会突然热血，雪之下不会突然撒娇）。
+
+【输出格式】只输出 JSON 数组，不要任何解释、不要代码块：
+[{"text":"这一幕的短摘要（10字内）","novel":"这一幕的画面描写（120-200字）","tags":["lie","awkward"]}]
+
+tags 只能从这个列表里选：lie,awkward,isolation,grief,betrayal,despair,choice,growth,friendship,romance,humor,cute,daily,food,music,absurd,resolve,peace,fear,battle,horror,tech,party,school,family,work`;
+
+async function aiGenerateEpisode(query){
+  const raw = await callDeepSeek([
+    { role:'system', content: GEN_SYS },
+    { role:'user', content: `【点播内容】${query}\n\n请生成 3-5 幕。` }
+  ], 1.05);
+
+  const arr = parseJSON(raw);
+  const beats = arr.map(o=>({
+    text: o.text || (o.novel||'').slice(0,12),
+    novel: o.novel || o.text || '',
+    tags: Array.isArray(o.tags) && o.tags.length ? o.tags : extractTags(o.novel||o.text||'')
+  })).filter(b=>b.novel);
+
+  if (!beats.length) throw new Error('生成结果为空');
+  return beats;
+}
+
+/* ===================== 10. 渲染 ===================== */
+
+function renderAudience(){
+  const box = $('#pane-audience');
+  const groups = {};
+  for (const id in DB.chars){
+    const w = DB.chars[id].work || '未分类';
+    (groups[w] ||= []).push(id);
+  }
+  const names = Object.keys(groups).sort((a,b)=>{
+    const ai = state.audience.filter(id=>DB.chars[id].work===a).length;
+    const bi = state.audience.filter(id=>DB.chars[id].work===b).length;
+    if (ai && !bi) return -1;
+    if (!ai && bi) return 1;
+    return a.localeCompare(b,'zh');
+  });
+
+  let html = `<div class="sec-title">已选观众 <span class="hint">${state.audience.length} 人 · 点击切换</span></div>`;
+
+  for (const wname of names){
+    const ids = groups[wname];
+    const inSeat = ids.filter(id=>state.audience.includes(id)).length;
+    html += `<div class="grp">
+      <div class="grp-head">
+        <span class="gname">${esc(wname)} <span style="color:#4d5568">${inSeat}/${ids.length}</span></span>
+        <button class="gbtn" data-grp="${esc(wname)}" data-act="all">全入</button>
+        <button class="gbtn" data-grp="${esc(wname)}" data-act="none">全出</button>
+      </div>`;
+    for (const id of ids){
+      const c = DB.chars[id];
+      const on = state.audience.includes(id);
+      html += `<div class="pick ${on?'on':''}" data-pick="${id}">
+        <span class="box">${on?'✓':''}</span>
+        <span class="dot" style="color:${c.color};background:${c.color}"></span>
+        <span class="nm">${esc(c.name)}</span>
+        ${c.custom?'<span class="sub">自建</span>':''}
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  box.innerHTML = html;
+  $('#cntAud').textContent = state.audience.length;
+}
+
+function renderSources(){
+  const box = $('#pane-sources');
+  let html = `<div class="sec-title">播放源 <span class="hint">点击作品展开片目</span></div>`;
+  const groups = {};
+  for (const wid in DB.works){
+    const w = DB.works[wid];
+    (groups[w.custom?'我的片源':'内置片源'] ||= []).push(wid);
+  }
+  for (const gname in groups){
+    html += `<div class="grp"><div class="grp-head"><span class="gname">${gname}</span></div>`;
+    for (const wid of groups[wid]){
+      const w = DB.works[wid];
+      const active = state.curWork === wid;
+      html += `<div class="work ${active?'active':''}" data-work="${wid}">
+        <span class="dot" style="color:${w.color};background:${w.color}"></span>
+        <span class="name">${esc(w.title)}</span>
+        <span class="badge">${(w.eps||[]).length}集</span>
+      </div>`;
+      if (active){
+        html += `<div style="margin:4px 0 8px">`;
+        (w.eps||[]).forEach((ep,i)=>{
+          html += `<div class="ep ${state.curEp===i?'active':''}" data-ep="${i}">
+            <span class="no">${esc(ep.no||('第'+(i+1)+'集'))}</span>${esc(ep.title||'')}</div>`;
+        });
+        if (w.custom) html += `<div style="text-align:right;margin-top:6px"><button class="ghost" style="font-size:11px;padding:5px 10px;min-height:auto" data-delwork="${wid}">删除此片源</button></div>`;
+        html += `</div>`;
+      }
+    }
+    html += `</div>`;
+  }
+  html += `<div class="rowbtn" style="margin-top:16px">
+    <button id="btn-new-ep" class="ghost">＋ 新建剧集</button>
+    <button id="btn-new-work" class="ghost">＋ 新建片源</button>
+  </div>`;
+  box.innerHTML = html;
+  renderProgress();
+}
+
+function renderChars(){
+  const box = $('#pane-chars');
+  const groups = {};
+  for (const id in DB.chars){
+    const w = DB.chars[id].work || '未分类';
+    (groups[w] ||= []).push(id);
+  }
+  let html = `<div class="sec-title">角色库 <span class="hint">点角色查看 · 自建可删</span></div>`;
+  for (const wname of Object.keys(groups).sort((a,b)=>a.localeCompare(b,'zh'))){
+    html += `<div class="grp"><div class="grp-head"><span class="gname">${esc(wname)}</span></div>`;
+    for (const id of groups[wname]){
+      const c = DB.chars[id];
+      html += `<div class="work" data-char="${id}">
+        <span class="dot" style="color:${c.color};background:${c.color}"></span>
+        <span class="name">${esc(c.name)}</span>
+        ${c.custom ? `<button class="del" data-delchar="${id}">删</button>` : `<span class="badge">内置</span>`}
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  html += `<div class="rowbtn" style="margin-top:16px"><button id="btn-new-char" class="primary">＋ 创造新角色</button></div>`;
+  box.innerHTML = html;
+}
+
+function renderSettings(){
+  const box = $('#pane-settings');
+  box.innerHTML = `
+    <div class="sec-title">DeepSeek 引擎</div>
+    <div class="tip">填入 API Key 后，角色反应与点播剧情由 DeepSeek 按人设即时生成；不填则使用本地引擎。<br>Key 只保存在本机浏览器。</div>
+    <div class="lbl">API Key</div>
+    <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" value="${esc(state.apiKey)}" />
+    <div class="lbl">模型</div>
+    <input id="apiModel" type="text" value="${esc(state.apiModel)}" placeholder="deepseek-chat" />
+    <div class="rowbtn"><button id="btn-save-key" class="primary">保存</button></div>
+
+    <div class="sec-title" style="margin-top:20px">播放</div>
+    <div class="lbl">自动播放速度</div>
+    <div class="rowbtn" style="margin-top:0">
+      <button data-speed="2600" class="${state.speed===2600?'on':''}">慢</button>
+      <button data-speed="1700" class="${state.speed===1700?'on':''}">正常</button>
+      <button data-speed="1000" class="${state.speed===1000?'on':''}">快</button>
+    </div>
+
+    <div class="sec-title" style="margin-top:20px">数据</div>
+    <div class="rowbtn">
+      <button id="btn-export">导出记录</button>
+      <button id="btn-clear">清空记录</button>
+    </div>
+    <div class="rowbtn">
+      <button id="btn-reset" class="ghost">重置全场</button>
+    </div>
+    <div class="rowbtn">
+      <button id="btn-wipe" class="ghost" style="color:#b07a7a;border-color:#3a2525">抹除全部自定义数据</button>
+    </div>
+
+    <div class="sec-title" style="margin-top:20px">用法</div>
+    <div class="tip">
+      · 底部「观众」逐个勾选，可跨作品混坐<br>
+      · 「片单」选片后点「开演」，或直接点播剧集<br>
+      · 输入框：直接写剧情 = 投放；写「播放 千叶村」= 点播（无收录时由 AI 生成）<br>
+      · 「角色」可自建任意角色，写完立刻能入座
+    </div>`;
+}
+
+function renderProgress(){
+  const box = $('#progress');
+  box.innerHTML = '';
+  const w = DB.works[state.curWork];
+  if (!w) return;
+  const ep = (w.eps||[])[state.curEp];
+  if (!ep) return;
+  (ep.beats||[]).forEach((_,i)=>{
+    const seg = document.createElement('div');
+    seg.className = 'seg' + (i<state.beat?' done':(i===state.beat?' now':''));
+    box.appendChild(seg);
+  });
+}
+
+function resetScreen(msg){
+  $('#screenMeta').textContent = '— 尚未开演 —';
+  const t = $('#screenText');
+  t.classList.add('empty');
+  const w = DB.works[state.curWork];
+  t.textContent = w
+    ? (msg || `《${w.title}》${(w.eps[state.curEp]||{}).no||''} ${(w.eps[state.curEp]||{}).title||''}\n—— 等待开演`)
+    : '银幕还没有亮起来。从底部「片单」挑一集吧。';
+  renderProgress();
+}
+
+function showOnScreen(meta, text){
+  $('#screenMeta').textContent = meta;
+  const st = $('#screenText');
+  st.classList.remove('empty');
+  st.textContent = text;
+  $('#screen').classList.remove('folded');
+  $('#fold').textContent = '收起';
+}
+
+function appendLine(res){
+  const body = $('#feedBody');
+  const div = document.createElement('div');
+  div.className = 'line' + (res.echo || res.intensity===0 ? ' idle' : '');
+  let html = `<span class="who" style="color:${res.color}">${esc(res.name)}</span><span class="body">`;
+  html += res.lines.map(l=>{
+    const cls = l.type==='speak'?'speak':(l.type==='sight'?'sight':'');
+    return `<span class="${cls}">${esc(l.text)}</span>`;
+  }).join('　');
+  html += '</span>';
+  div.innerHTML = html;
+  body.appendChild(div);
+  scrollFeed();
+  state.log.push(`【${res.name}】`+res.lines.map(l=>l.text).join(' '));
+  $('#cntAud').textContent = state.audience.length;
+}
+
+let thinkingEl = null;
+function showThinking(text){
+  const body = $('#feedBody');
+  const div = document.createElement('div');
+  div.className = 'line thinking';
+  div.innerHTML = `<span class="body dots">${esc(text)}</span>`;
+  body.appendChild(div);
+  scrollFeed();
+  thinkingEl = div;
+}
+function hideThinking(){ if (thinkingEl){ thinkingEl.remove(); thinkingEl=null; } }
+
+function feedNote(text, scene){
+  const body = $('#feedBody');
+  const div = document.createElement('div');
+  div.className = 'line beatnote' + (scene?' scene':'');
+  div.innerHTML = `<span class="body">${esc(text)}</span>`;
+  body.appendChild(div);
+  scrollFeed();
+  state.log.push(text);
+}
+
+function scrollFeed(){
+  const f = $('#feed');
+  requestAnimationFrame(()=>{ f.scrollTop = f.scrollHeight; });
+}
+
+/* ===================== 11. 播放 ===================== */
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+async function runBeats(beats, metaLabel){
+  if (!state.audience.length){ feedNote('（影厅里一个人都没有。）'); return; }
+  stopAuto();
+  $('#feedBody').innerHTML = '';
+  feedNote(`—— 灯暗。银幕亮起：${metaLabel} ——`);
+
+  for (let i=0;i<beats.length;i++){
+    state.beat = i;
+    const beat = beats[i] || {};
+    const novel = beat.novel || beat.text || '';
+    const tags = (beat.tags && beat.tags.length) ? beat.tags : extractTags(novel);
+
+    showOnScreen(metaLabel, novel);
+    renderProgress();
+    feedNote(`▸ 第 ${i+1} 幕`, true);
+
+    if (state.aiOn){
+      showThinking('（他们正在看');
+      try{
+        const rs = await aiReact({ ...beat, novel, tags });
+        hideThinking();
+        if (!rs.length) throw new Error('空返回');
+        rs.forEach(appendLine);
+      }catch(e){
+        hideThinking();
+        feedNote('（DeepSeek 调用失败，已回退本地引擎：'+e.message+'）');
+        reactToBeat({ ...beat, novel, tags }).forEach(appendLine);
+      }
+    } else {
+      reactToBeat({ ...beat, novel, tags }).forEach(appendLine);
+    }
+    await sleep(200);
+  }
+
+  feedNote(`—— ${metaLabel} · 完 ——`);
+  for (const r of curtainTalk()) appendLine(r);
+}
+
+async function playNextBeat(){
+  if (!state.curWork){ feedNote('（还没有选片。）'); return; }
+  const w = DB.works[state.curWork];
+  const ep = (w.eps||[])[state.curEp];
+  if (!ep){ feedNote('（这一部还没有片目。）'); return; }
+
+  const next = state.beat + 1;
+  if (next >= (ep.beats||[]).length){
+    stopAuto();
+    feedNote(`—— ${ep.no||''} ${ep.title||''} · 完 ——`);
+    for (const r of curtainTalk()) appendLine(r);
+    return;
+  }
+
+  state.beat = next;
+  const beat = ep.beats[next];
+  const novel = beat.novel || beat.text || '';
+  const tags = (beat.tags && beat.tags.length) ? beat.tags : extractTags(novel);
+
+  showOnScreen(`${w.title}　${ep.no||''}　${ep.title||''}`, novel);
+  renderProgress();
+  feedNote(`▸ 第 ${next+1} 幕`, true);
+
+  if (state.aiOn){
+    showThinking('（他们正在看');
+    try{
+      const rs = await aiReact({ ...beat, novel, tags });
+      hideThinking();
+      if (!rs.length) throw new Error('空返回');
+      rs.forEach(appendLine);
+    }catch(e){
+      hideThinking();
+      feedNote('（DeepSeek 调用失败，已回退本地引擎：'+e.message+'）');
+      reactToBeat({ ...beat, novel, tags }).forEach(appendLine);
+    }
+  } else {
+    reactToBeat({ ...beat, novel, tags }).forEach(appendLine);
+  }
+}
+
+function startAuto(){
+  if (state.autoTimer) return stopAuto();
+  $('#btn-auto').textContent = '暂停';
+  $('#btn-auto').classList.add('on');
+  state.autoTimer = setInterval(()=>playNextBeat(), state.speed);
+}
+function stopAuto(){
+  if (state.autoTimer){ clearInterval(state.autoTimer); state.autoTimer=null; }
+  $('#btn-auto').textContent = '自动';
+  $('#btn-auto').classList.remove('on');
+}
+
+/* ===================== 12. 点播 / 投放 ===================== */
+function findWorkByTitle(q){
+  const s = q.replace(/[《》\s]/g,'').toLowerCase();
+  for (const wid in DB.works){
+    const t = DB.works[wid].title.replace(/\s/g,'').toLowerCase();
+    if (t === s) return wid;
+  }
+  for (const wid in DB.works){
+    const t = DB.works[wid].title.replace(/\s/g,'').toLowerCase();
+    if (t.includes(s) || s.includes(t)) return wid;
+  }
+  // 片名匹配剧集
+  for (const wid in DB.works){
+    const w = DB.works[wid];
+    for (let i=0;i<(w.eps||[]).length;i++){
+      const epTitle = (w.eps[i].title||'').replace(/\s/g,'').toLowerCase();
+      if (epTitle && (epTitle.includes(s) || s.includes(epTitle))) return wid;
+    }
+  }
+  return null;
+}
+function findEpByTitle(wid, q){
+  const w = DB.works[wid];
+  const s = q.replace(/[《》\s]/g,'').toLowerCase();
+  for (let i=0;i<(w.eps||[]).length;i++){
+    const epTitle = (w.eps[i].title||'').replace(/\s/g,'').toLowerCase();
+    if (epTitle && (epTitle.includes(s) || s.includes(epTitle))) return i;
+  }
+  return 0;
+}
+
+async function handleInput(){
+  const v = $('#injectInput').value.trim();
+  if (!v) return;
+  if (!state.audience.length){ feedNote('（影厅里一个人都没有。先去「观众」挑人。）'); return; }
+  $('#injectInput').value = '';
+  $('#injectInput').blur();
+
+  if (/^(播放|放|点播|看|来一集|演)/.test(v)){
+    const query = v.replace(/^(播放|放|点播|看|来一集|演)\s*/,'').trim() || v;
+    const wid = findWorkByTitle(query);
+
+    if (wid){
+      const w = DB.works[wid];
+      state.curWork = wid;
+      state.curEp = findEpByTitle(wid, query);
+      state.beat = -1;
+      renderSources();
+      const ep = w.eps[state.curEp];
+      if (ep && ep.beats && ep.beats.length){
+        await runBeats(ep.beats, `${w.title}　${ep.no||''}　${ep.title||''}`);
+        return;
+      }
+    }
+
+    if (!state.aiOn){
+      feedNote('（片单里没有收录这一部。填入 DeepSeek Key 后可自动生成，或直接输入剧情段落投放。）');
+      return;
+    }
+
+    stopAuto();
+    $('#feedBody').innerHTML = '';
+    feedNote(`—— 灯暗。银幕亮起：${query} ——`);
+    showThinking('（正在准备片源');
+    try{
+      const beats = await aiGenerateEpisode(query);
+      hideThinking();
+
+      const wid2 = uid('w');
+      DB.works[wid2] = {
+        id: wid2, title: query, color: rnd(PALETTE), custom:true,
+        eps: [{ no:'AI', title:'即兴生成', beats }]
+      };
+      DB.workOrder.push(wid2);
+      state.curWork = wid2;
+      state.curEp = 0;
+      save();
+      renderSources();
+
+      await runBeats(beats, `${query}　AI 生成`);
+    }catch(e){
+      hideThinking();
+      feedNote('（生成失败：'+e.message+'）');
+    }
+    return;
+  }
+
+  const tags = extractTags(v);
+  const beat = { tags, text:v, novel:v };
+  showOnScreen('— 手动投放 —', v);
+  feedNote(`▸ 银幕上出现了：${v}`);
+
+  if (state.aiOn){
+    showThinking('（他们正在看');
+    try{
+      const rs = await aiReact(beat);
+      hideThinking();
+      if (!rs.length) throw new Error('空返回');
+      rs.forEach(appendLine);
+    }catch(e){
+      hideThinking();
+      feedNote('（DeepSeek 调用失败，已回退本地引擎：'+e.message+'）');
+      reactToBeat(beat).forEach(appendLine);
+    }
+  } else {
+    reactToBeat(beat).forEach(appendLine);
+  }
+}
+
+/* ===================== 13. 片源管理 ===================== */
+function selectWork(wid){
+  state.curWork = wid;
+  state.curEp = 0;
+  state.beat = -1;
+  renderSources();
+  resetScreen();
+}
+
+/* ===================== 14. 角色编辑 ===================== */
+function openCharEditor(id){
+  const c = id ? DB.chars[id] : null;
+  const isEdit = !!c;
+  const selected = new Set(
+    c ? Object.entries(c.tags||{}).filter(([,v])=>v>0.5).map(([k])=>k) : []
+  );
+  const tagChips = TAGS.map(([k,n])=>
+    `<span class="tchip ${selected.has(k)?'on':''}" data-tag="${k}">${n}</span>`).join('');
+
+  const works = [...new Set(Object.values(DB.chars).map(x=>x.work).filter(Boolean))];
+
+  $('#modalInner').innerHTML = `
+    <h3>${isEdit?'编辑角色':'创造角色'}</h3>
+    <div class="sub">CHARACTER</div>
+    <div class="tip">写得越具体，角色越像真人。不必写"萌点"——写下他会为什么走神、会注意到画面里的什么。</div>
+
+    <div class="lbl">名字 *</div>
+    <input id="c-name" value="${esc(c?c.name:'')}" placeholder="例：户冢彩加" />
+
+    <div class="lbl">所属作品 <span class="opt">可填任意新名字，会自动分组</span></div>
+    <input id="c-work" value="${esc(c?c.work:'')}" placeholder="例：我的青春恋爱物语果然有问题" list="worklist" />
+    <datalist id="worklist">${works.map(w=>`<option value="${esc(w)}">`).join('')}</datalist>
+
+    <div class="lbl">简介 <span class="opt">一句话，越像人越好</span></div>
+    <textarea id="c-bio" rows="2" placeholder="例：他温柔得像一阵风。别人以为他只是软，其实他看得比谁都清楚。">${esc(c?c.bio||'':'')}</textarea>
+
+    <div class="lbl">敏感题材 <span class="opt">选中的越容易被抓住</span></div>
+    <div class="chiprow" id="c-tags">${tagChips}</div>
+
+    <div class="lbl">他会注意到什么 <span class="opt">每行一条，可留空</span></div>
+    <textarea id="c-gaze" rows="4" placeholder="例：……比企谷同学，是不是有点累。&#10;（微微歪着头）">${esc((c&&c.gaze||[]).join('\n'))}</textarea>
+
+    <div class="lbl">他会说什么 <span class="opt">每行一条，可留空</span></div>
+    <textarea id="c-voice" rows="4" placeholder="例：「比企谷同学，你还好吗？」&#10;「……嗯，我觉得这样挺好的。」">${esc((c&&c.voice||[]).join('\n'))}</textarea>
+
+    <div class="lbl">走神时做什么 <span class="opt">每行一条，可留空</span></div>
+    <textarea id="c-idle" rows="3" placeholder="例：（安安静静地坐着）&#10;（把手里的纸巾叠了一下）">${esc((c&&c.idle||[]).join('\n'))}</textarea>
+
+    <div class="rowbtn">
+      ${isEdit?'<button id="c-cancel" class="ghost">取消</button>':''}
+      <button id="c-save" class="primary">${isEdit?'保存':'创建并加入观众席'}</button>
+    </div>`;
+
+  const tagBox = $('#c-tags');
+  tagBox.onclick = e => {
+    const t = e.target.closest('.tchip');
+    if (!t) return;
+    t.classList.toggle('on');
+  };
+
+  if (isEdit) $('#c-cancel').onclick = () => closeModal();
+  $('#c-save').onclick = () => {
+    const name = $('#c-name').value.trim();
+    if (!name){ alert('至少要有名字'); return; }
+    const work = $('#c-work').value.trim() || '我的青春恋爱物语果然有问题';
+    const chips = [...tagBox.querySelectorAll('.tchip.on')].map(x=>x.dataset.tag);
+    const tags = {};
+    for (const k of chips) tags[k] = 1.0;
+
+    if (isEdit){
+      c.name = name; c.work = work;
+      c.bio = $('#c-bio').value.trim();
+      c.tags = tags;
+      c.gaze = lines($('#c-gaze').value);
+      c.voice= lines($('#c-voice').value);
+      c.idle = lines($('#c-idle').value);
+    } else {
+      const newId = uid('c');
+      DB.chars[newId] = {
+        id:newId, custom:true, name, work,
+        color: rnd(PALETTE),
+        bio: $('#c-bio').value.trim(),
+        tags,
+        gaze: lines($('#c-gaze').value),
+        voice: lines($('#c-voice').value),
+        idle: lines($('#c-idle').value)
+      };
+      DB.charOrder.push(newId);
+      state.audience.push(newId);
+    }
+    save();
+    renderChars();
+    renderAudience();
+    closeModal();
+    feedNote(isEdit ? `（${name} 的档案已更新。）` : `（${name} 走进了影厅，找了个位子坐下。）`);
+  };
+
+  $('#modal').classList.add('show');
+}
+
+function showCharCard(id){
+  const c = DB.chars[id];
+  if (!c) return;
+  const aff = Object.entries(c.tags||{})
+    .sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]))
+    .slice(0,8)
+    .map(([t,v])=>`<span class="tagpill">${TAG_NAME[t]||t} ${v>0?'+':''}${v.toFixed(1)}</span>`)
+    .join('') || '<span class="tagpill">未设定</span>';
+
+  $('#modalInner').innerHTML = `
+    <h3 style="color:${c.color}">${esc(c.name)}</h3>
+    <div class="sub">${esc(c.work||'未分类')}${c.custom?' · 自建角色':''}</div>
+    <p>${esc(c.bio||'（没有简介）')}</p>
+    <div class="kv"><b>情绪值</b>　${moodOf(id).toFixed(1)} / ±6</div>
+    <div class="kv" style="margin-top:10px"><b>敏感维度</b></div>
+    <div>${aff}</div>
+    <div class="kv" style="margin-top:12px"><b>状态</b>　${state.audience.includes(id)?'在座':'未入座'}</div>
+    <div class="rowbtn">
+      <button id="cc-toggle">${state.audience.includes(id)?'请他离场':'请他入座'}</button>
+      ${c.custom?'<button id="cc-edit" class="ghost">编辑</button>':''}
+      <button id="cc-close" class="ghost">关闭</button>
+    </div>`;
+
+  $('#cc-toggle').onclick = () => {
+    if (state.audience.includes(id)) state.audience = state.audience.filter(x=>x!==id);
+    else state.audience.push(id);
+    save(); renderAudience(); closeModal();
+  };
+  if (c.custom) $('#cc-edit').onclick = () => { closeModal(); setTimeout(()=>openCharEditor(id),80); };
+  $('#cc-close').onclick = () => closeModal();
+  $('#modal').classList.add('show');
+}
+
+function closeModal(){ $('#modal').classList.remove('show'); $('#modalInner').innerHTML=''; }
+
+/* ===================== 15. 新建剧集 / 片源 ===================== */
+function openEpCreator(){
+  const works = Object.keys(DB.works).map(wid=>({ id:wid, t:DB.works[wid].title }));
+  $('#modalInner').innerHTML = `
+    <h3>新建剧集</h3>
+    <div class="sub">CUSTOM EPISODE</div>
+    <div class="tip">选择所属片源，把剧情按段落写下来。每一段 = 银幕上的一幕。</div>
+    <div class="lbl">所属片源</div>
+    <select id="e-work">
+      ${works.map(w=>`<option value="${w.id}">${esc(w.t)}</option>`).join('')}
+      <option value="__new">＋ 新建片源…</option>
+    </select>
+    <input id="e-newwork" placeholder="新片源名称" style="display:none" />
+    <div class="lbl">剧集名</div>
+    <input id="e-title" placeholder="例：第 8 集 · 那天之后" />
+    <div class="lbl">剧情内容 <span class="opt">一段一行，空行分段</span></div>
+    <textarea id="e-body" rows="9" placeholder="雨停了。走廊上没什么人。&#10;他站在贩卖机前面，硬币在手指间翻了两下。&#10;&#10;身后传来脚步声。他没有回头。"></textarea>
+    <div class="rowbtn">
+      <button id="e-cancel" class="ghost">取消</button>
+      <button id="e-save" class="primary">保存并播放</button>
+    </div>`;
+
+  const sel = $('#e-work');
+  const nw = $('#e-newwork');
+  sel.onchange = () => { nw.style.display = sel.value==='__new' ? 'block' : 'none'; };
+
+  $('#e-cancel').onclick = () => closeModal();
+  $('#e-save').onclick = async () => {
+    let wid = sel.value;
+    if (wid === '__new'){
+      const title = nw.value.trim();
+      if (!title){ alert('请填写新片源名称'); return; }
+      wid = uid('w');
+      DB.works[wid] = { id:wid, title, color: rnd(PALETTE), custom:true, eps:[] };
+      DB.workOrder.push(wid);
+    }
+    const title = $('#e-title').value.trim() || '自定义剧集';
+    const raw = $('#e-body').value;
+    const paras = raw.split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean);
+    const segs = paras.length ? paras : raw.split('\n').map(x=>x.trim()).filter(Boolean);
+    if (!segs.length){ alert('请写点内容'); return; }
+
+    const beats = segs.map(t=>({ text:t.slice(0,14), novel:t, tags: extractTags(t) }));
+    const w = DB.works[wid];
+    w.eps = w.eps || [];
+    w.eps.push({ no:'自'+w.eps.length, title, beats });
+    save();
+
+    state.curWork = wid;
+    state.curEp = w.eps.length - 1;
+    state.beat = -1;
+    renderSources();
+    closeModal();
+    closeDrawer();
+    await runBeats(beats, `${w.title}　${title}`);
+  };
+
+  $('#modal').classList.add('show');
+}
+
+function openWorkCreator(){
+  const wid = uid('w');
+  $('#modalInner').innerHTML = `
+    <h3>新建片源</h3>
+    <div class="sub">CUSTOM SOURCE</div>
+    <div class="tip">创建一个空片源，之后可以往里加剧集。</div>
+    <div class="lbl">片源名称</div>
+    <input id="w-title" placeholder="例：我的青春恋爱物语果然有问题 · 番外" />
+    <div class="rowbtn">
+      <button id="w-cancel" class="ghost">取消</button>
+      <button id="w-save" class="primary">创建</button>
+    </div>`;
+  $('#w-cancel').onclick = () => closeModal();
+  $('#w-save').onclick = () => {
+    const t = $('#w-title').value.trim();
+    if (!t){ alert('请填名称'); return; }
+    DB.works[wid] = { id:wid, title:t, color:rnd(PALETTE), custom:true, eps:[] };
+    DB.workOrder.push(wid);
+    save();
+    state.curWork = wid;
+    state.curEp = 0;
+    state.beat = -1;
+    renderSources();
+    closeModal();
+    feedNote(`（新片源《${t}》已创建。在「片单」里可以往里加剧集。）`);
+  };
+  $('#modal').classList.add('show');
+}
+
+/* ===================== 16. 抽屉 ===================== */
+function openDrawer(pane){
+  const titles = { audience:'观众席', sources:'片单', chars:'角色库', settings:'设置' };
+  $('#drawerTitle').textContent = titles[pane] || '';
+  ['audience','sources','chars','settings'].forEach(p=>{
+    $('#pane-'+p).style.display = (p===pane) ? 'block' : 'none';
+  });
+  if (pane==='audience') renderAudience();
+  if (pane==='sources')  renderSources();
+  if (pane==='chars')    renderChars();
+  if (pane==='settings') renderSettings();
+  $('#drawer').classList.add('show');
+  $('#mask').classList.add('show');
+}
+function closeDrawer(){
+  $('#drawer').classList.remove('show');
+  $('#mask').classList.remove('show');
+}
+
+/* ===================== 17. 事件绑定 ===================== */
+$('#btn-play').onclick = async () => {
+  const w = DB.works[state.curWork];
+  if (!w){ feedNote('（先在「片单」里选一部作品。）'); return; }
+  if (!state.audience.length){ feedNote('（影厅里一个人都没有。先去「观众」挑人。）'); return; }
+  const ep = (w.eps||[])[state.curEp];
+  if (!ep || !(ep.beats||[]).length){ feedNote('（这一部还没有片目。）'); return; }
+  await runBeats(ep.beats, `${w.title}　${ep.no||''}　${ep.title||''}`);
+};
+
+$('#btn-next').onclick = () => { stopAuto(); playNextBeat(); };
+$('#btn-auto').onclick = () => startAuto();
+$('#btn-inject').onclick = handleInput;
+$('#injectInput').addEventListener('keydown', e => { if (e.key==='Enter') handleInput(); });
+$('#btn-settings').onclick = () => openDrawer('settings');
+$('#drawerClose').onclick = () => closeDrawer();
+$('#mask').onclick = () => closeDrawer();
+
+$('#fold').onclick = () => {
+  const s = $('#screen');
+  s.classList.toggle('folded');
+  $('#fold').textContent = s.classList.contains('folded') ? '展开' : '收起';
+};
+
+$$('[data-open]').forEach(b => { b.onclick = () => openDrawer(b.dataset.open); });
+$('#modal').onclick = e => { if (e.target.id==='modal') closeModal(); };
+
+$('#drawer').addEventListener('click', async e => {
+  const t = e.target;
+
+  /* 观众席 */
+  const pick = t.closest('[data-pick]');
+  if (pick){
+    const id = pick.dataset.pick;
+    if (state.audience.includes(id)) state.audience = state.audience.filter(x=>x!==id);
+    else state.audience.push(id);
+    save(); renderAudience(); return;
+  }
+
+  const gbtn = t.closest('[data-grp]');
+  if (gbtn){
+    const wname = gbtn.dataset.grp;
+    const ids = Object.keys(DB.chars).filter(id=>DB.chars[id].work===wname);
+    if (gbtn.dataset.act==='all'){
+      for (const id of ids) if (!state.audience.includes(id)) state.audience.push(id);
+    } else {
+      state.audience = state.audience.filter(id=>!ids.includes(id));
+    }
+    save(); renderAudience(); return;
+  }
+
+  /* 片单 */
+  const workEl = t.closest('[data-work]');
+  if (workEl && !t.closest('[data-char]')){
+    const wid = workEl.dataset.work;
+    if (state.curWork === wid){
+      state.curWork = null; state.curEp = 0; state.beat = -1;
+      renderSources(); resetScreen();
+    } else {
+      selectWork(wid);
+    }
+    return;
+  }
+
+  const epEl = t.closest('[data-ep]');
+  if (epEl){
+    state.curEp = parseInt(epEl.dataset.ep,10);
+    state.beat = -1;
+    renderSources(); resetScreen();
+    return;
+  }
+
+  const dw = t.closest('[data-delwork]');
+  if (dw){
+    const wid = dw.dataset.delwork;
+    if (!confirm('删除这个自定义片源？')) return;
+    delete DB.works[wid];
+    DB.workOrder = DB.workOrder.filter(x=>x!==wid);
+    if (state.curWork === wid){ state.curWork = null; state.curEp = 0; state.beat = -1; resetScreen(); }
+    save(); renderSources(); return;
+  }
+
+  if (t.id === 'btn-new-ep')   { closeDrawer(); setTimeout(openEpCreator, 80); return; }
+  if (t.id === 'btn-new-work') { closeDrawer(); setTimeout(openWorkCreator, 80); return; }
+
+  /* 角色库 */
+  const charEl = t.closest('[data-char]');
+  if (charEl){ closeDrawer(); setTimeout(()=>showCharCard(charEl.dataset.char),80); return; }
+
+  const delChar = t.closest('[data-delchar]');
+  if (delChar){
+    const id = delChar.dataset.delchar;
+    if (!confirm('删除这个自定义角色？')) return;
+    delete DB.chars[id];
+    DB.charOrder = DB.charOrder.filter(x=>x!==id);
+    state.audience = state.audience.filter(x=>x!==id);
+    save(); renderChars(); return;
+  }
+
+  if (t.id === 'btn-new-char'){ closeDrawer(); setTimeout(()=>openCharEditor(null),80); return; }
+
+  /* 设置 */
+  if (t.id === 'btn-save-key'){
+    state.apiKey  = ($('#apiKey').value||'').trim();
+    state.apiModel= ($('#apiModel').value||'').trim() || DEEPSEEK.defaultModel;
+    state.aiOn = !!state.apiKey;
+    saveSettings();
+    feedNote(state.aiOn
+      ? '（已接入 DeepSeek。从现在起，角色反应与点播剧情由模型生成。）'
+      : '（未填写 API Key，使用本地引擎。）');
+    renderSettings();
+    return;
+  }
+
+  const sp = t.closest('[data-speed]');
+  if (sp){
+    state.speed = parseInt(sp.dataset.speed,10);
+    saveSettings();
+    renderSettings();
+    if (state.autoTimer){ stopAuto(); startAuto(); }
+    return;
+  }
+
+  if (t.id === 'btn-export'){
+    const text = state.log.join('\n') || '（还没有记录）';
+    const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '侍奉部观影院_'+Date.now()+'.txt';
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    return;
+  }
+
+  if (t.id === 'btn-clear'){
+    state.log = [];
+    $('#feedBody').innerHTML = '';
+    feedNote('（记录已清空。）');
+    return;
+  }
+
+  if (t.id === 'btn-reset'){
+    stopAuto();
+    state.audience = []; state.mood = {}; state.beat = -1; state.log = [];
+    state.curWork = null; state.curEp = 0;
+    $('#feedBody').innerHTML = '';
+    resetScreen();
+    save(); renderAudience(); renderSources();
+    closeDrawer();
+    feedNote('（场灯亮了。所有人起身离场。）');
+    return;
+  }
+
+  if (t.id === 'btn-wipe'){
+    if (!confirm('将删除全部自建角色与自建片源，不可恢复。确定？')) return;
+    for (const id of [...DB.charOrder]) delete DB.chars[id];
+    for (const id of [...DB.workOrder]) delete DB.works[id];
+    DB.charOrder = []; DB.workOrder = [];
+    state.audience = state.audience.filter(id=>DB.chars[id]);
+    state.mood = {};
+    if (!DB.works[state.curWork]){ state.curWork = null; state.beat = -1; resetScreen(); }
+    save(); renderChars(); renderSources(); renderAudience();
+    closeDrawer();
+    feedNote('（自定义数据已抹除。）');
+    return;
+  }
+});
+
+/* ===================== 18. 启动 ===================== */
+(function init(){
+  for (const k in BUILTIN_CHARS){ DB.chars[k] = { ...BUILTIN_CHARS[k], id:k }; DB.charOrder.push(k); }
+  for (const k in BUILTIN_WORKS){ DB.works[k] = { ...BUILTIN_WORKS[k], id:k }; DB.workOrder.push(k); }
+
+  load();
+
+  if (!state.audience.length){
+    // 默认全员入座：三位主角 + 现充组 + 材木座 + 阳乃 + 川崎 + 折本 + 玉绳 + 平冢 + 小町
+    const preset = ['hikigaya','yukino','yui','hayama','miura','ebina','tobe',
+      'zaimokuza','haruno','kawasaki','orimoto','tamanawa','hiratsuka','komachi'];
+    state.audience = preset.filter(id=>DB.chars[id]);
+  }
+  if (!state.curWork) state.curWork = 'oregairu';
+
+  renderSources();
+  renderAudience();
+  resetScreen();
+
+  feedNote('（灯亮着。总武高中的人陆续走进影厅。比企谷找了个靠边的位子，雪之下坐得笔直，由比滨在两人中间犹豫了一下才坐下。）');
+  feedNote('（现充组坐在后排。材木座抱着原稿坐在角落。阳乃不知道什么时候也来了。）');
+  feedNote('（底部「观众」逐个勾选，还能把雪之下的父母、一色她们也叫进来；「角色」里可以创造任何人。）');
+  feedNote('（输入框直接写剧情 = 投放；写「播放 千叶村」= 点播。）');
+
+  if (state.aiOn) feedNote('（检测到已保存的 DeepSeek Key，AI 引擎已就绪。）');
+})();
+</script>
+</body>
+</html>
